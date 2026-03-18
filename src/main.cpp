@@ -86,30 +86,30 @@ class $modify(ProLevelInfoLayer, LevelInfoLayer) {
 	};
 
 	void addLabel(std::string str) {
-		Loader::get()->queueInMainThread([this, str] {
-			const auto fields = m_fields.self();
+		Loader::get()->queueInMainThread([self = Ref(this), str] {
+			const auto fields = self->m_fields.self();
 
 			if (fields->literalLengthLabel) return fields->literalLengthLabel->setString(str.c_str());
 
 			fields->literalLengthLabel = CCLabelBMFont::create(str.c_str(), "bigFont.fnt");
-			fields->literalLengthLabel->setPosition(m_exactLengthLabel->getPosition());
+			fields->literalLengthLabel->setPosition(self->m_exactLengthLabel->getPosition());
 			fields->literalLengthLabel->setAnchorPoint({0, .5f});
 			fields->literalLengthLabel->setScale(0.325f);
-			fields->literalLengthLabel->setPositionY(fields->literalLengthLabel->getPositionY() - (m_exactLengthLabel->getContentHeight() * m_exactLengthLabel->getScale()));
+			fields->literalLengthLabel->setPositionY(fields->literalLengthLabel->getPositionY() - (self->m_exactLengthLabel->getContentHeight() * self->m_exactLengthLabel->getScale()));
 
 			
-			if (!m_exactLengthLabel->isVisible() && !isBetterInfo)
-				fields->literalLengthLabel->setPositionY(m_exactLengthLabel->getPositionY());
+			if (!self->m_exactLengthLabel->isVisible() && !isBetterInfo)
+				fields->literalLengthLabel->setPositionY(self->m_exactLengthLabel->getPositionY());
 			else {
-				m_exactLengthLabel->setScale(0.275f);
-				m_exactLengthLabel->setPositionY(m_exactLengthLabel->getPositionY() + 2);
+				self->m_exactLengthLabel->setScale(0.275f);
+				self->m_exactLengthLabel->setPositionY(self->m_exactLengthLabel->getPositionY() + 2);
 
 				fields->literalLengthLabel->setScale(0.275f);
 				fields->literalLengthLabel->setPositionY(fields->literalLengthLabel->getPositionY() + 4);
 			}
 
 
-			this->addChild(fields->literalLengthLabel);
+			self->addChild(fields->literalLengthLabel);
 			fields->literalLengthLabel->setID("literal-length-label"_spr);
 		});
 	}
@@ -154,11 +154,11 @@ class $modify(ProLevelInfoLayer, LevelInfoLayer) {
 		if (!Mod::get()->getSettingValue<bool>("enabled") || !m_exactLengthLabel) return;
 		if (sessionLengths.contains(level->m_levelID.value())) sessionLengths.erase(level->m_levelID.value());
 
-		std::thread([this, level]() {
+		std::thread([self = Ref(this), level]() {
 			std::string levelString = getLengthString(level);
 
 			auto startTime = std::chrono::high_resolution_clock::now();
-			while (!m_enterTransitionFinished) {
+			while (!self->m_enterTransitionFinished) {
 				if (std::chrono::high_resolution_clock::now() - startTime > std::chrono::duration<double, std::milli>(5000))
 					break;
 	
@@ -166,10 +166,10 @@ class $modify(ProLevelInfoLayer, LevelInfoLayer) {
 			}
 
 			CCScene* scene = CCDirector::sharedDirector()->getRunningScene();
-			if (scene->getChildByType<LevelInfoLayer>(0) != this) return;
+			if (scene->getChildByType<LevelInfoLayer>(0) != self) return;
 
-			Loader::get()->queueInMainThread([&, this, levelString] {
-				addLabel(levelString);
+			Loader::get()->queueInMainThread([&, self, levelString] {
+				self->addLabel(levelString);
 			});
 
 		}).detach();
